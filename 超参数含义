@@ -7,14 +7,11 @@ Stable Baselines (PPO2 from https://github.com/hill-a/stable-baselines)
 
 Introduction to PPO: https://spinningup.openai.com/en/latest/algorithms/ppo.html
 
-policy: The policy model to use (MlpPolicy, CnnPolicy, MultiInputPolicy)
-env: The environment to learn from (if registered in Gym, can be str)
-learning_rate: The learning rate, it can be a function of the current progress remaining (from 1 to 0)
-n_steps: The number of steps to run for each environment per update
-        (i.e. rollout buffer size is n_steps * n_envs where n_envs is number of environment copies running in parallel)
-        NOTE: n_steps * n_envs must be greater than 1 (because of the advantage normalization)
-        See https://github.com/pytorch/pytorch/issues/29372
-batch_size: Minibatch size
+policy: 指定使用的策略网络包括 (MlpPolicy, CnnPolicy, MultiInputPolicy)
+env: 强化学习环境 (Gym环境或自定义)
+learning_rate: 学习率（步长），控制模型更新速度
+n_steps: 单个环境每次更新收集的步数，较大的步数可以提供更多信息但会增加计算量
+batch_size: 单次更新所需样本数
 n_epochs: Number of epoch when optimizing the surrogate loss
 gamma: Discount factor
 gae_lambda: Factor for trade-off of bias vs variance for Generalized Advantage Estimator
