@@ -11,37 +11,21 @@ policy: 指定使用的策略网络包括 (MlpPolicy, CnnPolicy, MultiInputPolic
 env: 强化学习环境 (Gym环境或自定义)
 learning_rate: 学习率（步长），控制模型更新速度
 n_steps: 单个环境每次更新收集的步数，较大的步数可以提供更多信息但会增加计算量
-batch_size: 单次更新所需样本数
-n_epochs: Number of epoch when optimizing the surrogate loss
-gamma: Discount factor
-gae_lambda: Factor for trade-off of bias vs variance for Generalized Advantage Estimator
-clip_range: Clipping parameter, it can be a function of the current progress remaining (from 1 to 0).
-clip_range_vf: Clipping parameter for the value function,
-        it can be a function of the current progress remaining (from 1 to 0).
-        This is a parameter specific to the OpenAI implementation. If None is passed (default),
-        no clipping will be done on the value function.
-        IMPORTANT: this clipping depends on the reward scaling.
-normalize_advantage: Whether to normalize or not the advantage
-ent_coef: Entropy coefficient for the loss calculation
-vf_coef: Value function coefficient for the loss calculation
-max_grad_norm: The maximum value for the gradient clipping
-use_sde: Whether to use generalized State Dependent Exploration (gSDE)
-        instead of action noise exploration (default: False)
-sde_sample_freq: Sample a new noise matrix every n steps when using gSDE
-        Default: -1 (only sample at the beginning of the rollout)
-rollout_buffer_class: Rollout buffer class to use. If ``None``, it will be automatically selected.
-rollout_buffer_kwargs: Keyword arguments to pass to the rollout buffer on creation
-target_kl: Limit the KL divergence between updates,
-        because the clipping is not enough to prevent large update
-        see issue #213 (cf https://github.com/hill-a/stable-baselines/issues/213)
-        By default, there is no limit on the kl div.
-stats_window_size: Window size for the rollout logging, specifying the number of episodes to average
-        the reported success rate, mean episode length, and mean reward over
-tensorboard_log: the log location for tensorboard (if None, no logging)
-policy_kwargs: additional arguments to be passed to the policy on creation. See :ref:`ppo_policies`
-verbose: Verbosity level: 0 for no output, 1 for info messages (such as device or wrappers used), 2 for
-        debug messages
+batch_size: 单次更新所需样本数，较大样本可以提供稳定的梯度估计但会增加内存消耗
+n_epochs: 单次更新中的梯度优化次数，次数越多样本利用越充分，但会增加训练时间
+（13-15关系：假设有m个并行环境env，单次更新每个环境收集n_steps个样本，总样本就有 n_steps*m 个；
+  假设单次更新采用batch_size个样本，则有 n_steps*m/batch_size 个批次；
+  使用每个批次的数据计算优势函数、损失函数，采用梯度下降更新模型参数；
+  n_epochs表示上述过程重复次数；）
+gamma: 折扣因子，表示对未来参数的重视程度，越接近1越重视未来奖励
+gae_lambda: 广义优势估计的衰减系数，用于平衡方差和偏差；
+（lambda >> 1：表示更接近蒙特卡洛估计，优势函数的估计更准确（高方差、低偏差），对于低方差任务（如密集奖励任务），使用较高的lambda=0.99）
+（lambda >> 0：表示更接近TD估计，优势函数的估计更稳定（低方差、高偏差），对于高方差任务（如稀疏奖励任务），使用较低的lambda=0.9）
+clip_range: 剪切参数，用于限制策略更新的步长；决定了新旧策略概率比的范围，避免策略更新幅度过大
+ent_coef: 用于损失计算的熵系数默认为0；当 ent_coef 取正值时，熵项会在目标函数中起到正向激励的作用；优化目标函数时，算法会尝试增大策略的熵，即增加策略的随机性鼓励更多的探索
+vf_coef: 用于损失计算的价值函数系数默认0.5；如果 vf_coef 过大，价值网络可能会过度拟合训练数据，导致在新的状态下价值估计不准确；如果 vf_coef 过小，价值网络可能无法充分学习到状态价值的特征，出现欠拟合的情况
+max_grad_norm: 梯度剪切阈值默认0.5，防止梯度爆炸
+target_kl: 目标KL散度用于早停策略更新；当计算得到的 KL 散度小于 target_kl 时，说明新策略相对于旧策略的变化在可接受的范围内，此时可以继续进行策略更新，以进一步优化策略；当计算得到的 KL 散度大于 target_kl 时，表明新策略相对于旧策略的偏离过大，可能会导致训练不稳定或者性能下降
+tensorboard_log: TensorBoard 日志文件的路径。如果设置为 None，则不记录日志
 seed: Seed for the pseudo random generators
-device: Device (cpu, cuda, ...) on which the code should be run.
-        Setting it to auto, the code will be run on the GPU if possible.
-_init_setup_model: Whether or not to build the network at the creation of the instance
+device: 选择程序运行的位置（CPU/GPU）
