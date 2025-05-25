@@ -13,7 +13,7 @@ env = Monitor(gym.make("Pendulum-v1"))
 eval_env = Monitor(gym.make("Pendulum-v1"))
 eval_callback = EvalCallback(
     eval_env, 
-    best_model_save_path='C:/Users/GuoKai/Desktop/python_demo/PI自整定-强化学习/PI整定-SAC-simulink/SAC_PI_Mode',
+    best_model_save_path='best_model.zip',
     eval_freq=5000,
     deterministic=True, 
     render=False
@@ -45,8 +45,8 @@ model = PPO(
 # model.learn(total_timesteps=50000, callback=eval_callback)
 # print("训练完成！")
 
-# model.save('C:/Users/GuoKai/Desktop/python_demo/PI自整定-强化学习/PI整定-SAC-simulink/SAC_PI_Mode.zip')
-model = PPO.load('C:/Users/GuoKai/Desktop/python_demo/PI自整定-强化学习/PI整定-SAC-simulink/SAC_PI_Mode.zip')
+# model.save('PPO_best_mode.zip')
+model = PPO.load('PPO_best_mode.zip')
 
 print("\n开始评估模型...")
 n_eval_episodes = 10 # 评估10个回合
